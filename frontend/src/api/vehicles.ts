@@ -7,9 +7,22 @@ export interface Vehicle {
   make_model: string;
   year?: string;
   is_active: boolean;
+  created_at: string;
+}
+
+export interface VehicleCreate {
+  type: string;
+  plate_number: string;
+  make_model: string;
+  year?: string;
 }
 
 export const getVehicles = async (): Promise<Vehicle[]> => {
   const { data } = await apiClient.get('/vehicles/');
+  return data;
+};
+
+export const createVehicle = async (vehicle: VehicleCreate): Promise<Vehicle> => {
+  const { data } = await apiClient.post('/vehicles/', vehicle);
   return data;
 };

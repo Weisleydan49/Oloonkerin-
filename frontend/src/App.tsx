@@ -4,6 +4,10 @@ import { AdminLayout } from './components/layout/AdminLayout';
 import { Dashboard } from './pages/Dashboard';
 import { Projects } from './pages/Projects';
 import { FuelLogs } from './pages/FuelLogs';
+import { Vehicles } from './pages/Vehicles';
+import { Maintenance } from './pages/Maintenance';
+import { People } from './pages/People';
+import { Payroll } from './pages/Payroll';
 
 function App() {
   return (
@@ -11,11 +15,11 @@ function App() {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/projects" element={<Projects />} />
-        <Route path="/vehicles" element={<div className="p-6"><h2 className="text-2xl font-bold">Vehicles & Machinery</h2></div>} />
+        <Route path="/vehicles" element={<Vehicles />} />
         <Route path="/fuel" element={<FuelLogs />} />
-        <Route path="/maintenance" element={<div className="p-6"><h2 className="text-2xl font-bold">Maintenance</h2></div>} />
-        <Route path="/people" element={<div className="p-6"><h2 className="text-2xl font-bold">Supervisors & Drivers</h2></div>} />
-        <Route path="/payroll" element={<div className="p-6"><h2 className="text-2xl font-bold">Payroll</h2></div>} />
+        <Route path="/maintenance" element={<Maintenance />} />
+        <Route path="/people" element={<People />} />
+        <Route path="/payroll" element={<Payroll />} />
       </Routes>
     </AdminLayout>
   );
