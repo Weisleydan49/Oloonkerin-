@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Truck, Droplets, MapPin, TrendingUp, AlertCircle } from 'lucide-react';
 
 const StatCard = ({ title, value, icon: Icon, trend, trendValue, description }: any) => (

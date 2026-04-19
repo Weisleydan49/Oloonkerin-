@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Bell, Search, UserCircle } from 'lucide-react';
 
 export const Header = () => {

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { LayoutDashboard, Truck, Droplets, Wrench, MapPin, Users, Banknote, LogOut } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '../../lib/utils';
