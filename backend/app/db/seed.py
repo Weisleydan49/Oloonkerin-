@@ -18,7 +18,7 @@ async def create_default_admin():
         admin = User(
             email="admin@oloonkerin.com",
             full_name="System Administrator",
-            hashed_password=get_password_hash("Admin@123"),  # Change this immediately in production!
+            hashed_password=get_password_hash("Admin@123"),  # Change this immediately in production!(I will use dB details)
             role=Role.ADMIN,
             is_active=True,
         )
