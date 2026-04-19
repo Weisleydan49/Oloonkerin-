@@ -3,12 +3,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import AsyncSessionLocal, engine, Base
 from app.core.security import get_password_hash
 from app.models.user import User, Role
+from sqlalchemy import text
 
 async def create_default_admin():
     async with AsyncSessionLocal() as session:
         # Check if admin already exists
         result = await session.execute(
-            "SELECT id FROM users WHERE email = :email LIMIT 1",
+            text("SELECT id FROM users WHERE email = :email LIMIT 1"),
             {"email": "admin@oloonkerin.com"}
         )
         if result.scalar_one_or_none():

@@ -1,19 +1,26 @@
-from sqlalchemy import Column, String, ForeignKey, Numeric, DateTime, Text
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from uuid import uuid4
-from ..core.database import Base
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
 
-class MaintenanceLog(Base):
-    __tablename__ = "maintenance_logs"
+class MaintenanceLogBase(BaseModel):
+    date: datetime
+    vehicle_id: str
+    cost_ksh: float
+    description: str
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid4()))
-    date = Column(DateTime, nullable=False)
-    vehicle_id = Column(String, ForeignKey("vehicles.id"), nullable=False)
-    cost_ksh = Column(Numeric(12, 2), nullable=False)
-    description = Column(Text, nullable=False)
-    created_by_id = Column(String, ForeignKey("users.id"), nullable=False)
-    created_at = Column(DateTime, server_default=func.now())
+class MaintenanceLogCreate(MaintenanceLogBase):
+    pass
 
-    vehicle = relationship("Vehicle", back_populates="maintenance_logs")
-    created_by = relationship("User", back_populates="maintenance_logs")
+class MaintenanceLogUpdate(BaseModel):
+    date: Optional[datetime] = None
+    vehicle_id: Optional[str] = None
+    cost_ksh: Optional[float] = None
+    description: Optional[str] = None
+
+class MaintenanceLogResponse(MaintenanceLogBase):
+    id: str
+    created_by_id: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

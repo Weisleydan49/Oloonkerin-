@@ -1,19 +1,26 @@
-from sqlalchemy import Column, String, Boolean, DateTime, Text
-from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
-from uuid import uuid4
-from ..core.database import Base
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
 
-class Project(Base):
-    __tablename__ = "projects"
+class ProjectBase(BaseModel):
+    name: str
+    location: str
+    description: Optional[str] = None
+    is_active: bool = True
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid4()))
-    name = Column(String, nullable=False)                    # e.g. "Oloonkerin Road Project"
-    location = Column(String, nullable=False)                # e.g. "Narok County"
-    description = Column(Text, nullable=True)
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+class ProjectCreate(ProjectBase):
+    pass
 
-    vehicles = relationship("Vehicle", back_populates="current_project")
-    machine_sets = relationship("MachineSet", back_populates="project")
+class ProjectUpdate(BaseModel):
+    name: Optional[str] = None
+    location: Optional[str] = None
+    description: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class ProjectResponse(ProjectBase):
+    id: str
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

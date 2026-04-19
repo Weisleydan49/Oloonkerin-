@@ -1,18 +1,25 @@
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from uuid import uuid4
-from ..core.database import Base
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
 
-class Driver(Base):
-    __tablename__ = "drivers"
+class DriverBase(BaseModel):
+    full_name: str
+    license_number: str
+    phone: str
+    is_active: bool = True
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid4()))
-    full_name = Column(String, nullable=False)
-    phone = Column(String, unique=True, nullable=False)
-    id_number = Column(String, unique=True, nullable=False)
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, server_default=func.now())
+class DriverCreate(DriverBase):
+    pass
 
-    vehicle = relationship("Vehicle", back_populates="driver", uselist=False)
-    payroll_records = relationship("PayrollRecord", back_populates="driver", cascade="all, delete-orphan")
+class DriverUpdate(BaseModel):
+    full_name: Optional[str] = None
+    license_number: Optional[str] = None
+    phone: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class DriverResponse(DriverBase):
+    id: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

@@ -1,17 +1,23 @@
-from sqlalchemy import Column, String, Boolean, DateTime
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from uuid import uuid4
-from ..core.database import Base
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
 
-class Supervisor(Base):
-    __tablename__ = "supervisors"
+class SupervisorBase(BaseModel):
+    full_name: str
+    phone: str
+    is_active: bool = True
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid4()))
-    full_name = Column(String, nullable=False)
-    phone = Column(String, unique=True, nullable=False)
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, server_default=func.now())
+class SupervisorCreate(SupervisorBase):
+    pass
 
-    machine_sets = relationship("MachineSet", back_populates="supervisor")
-    payroll_records = relationship("PayrollRecord", back_populates="supervisor", cascade="all, delete-orphan")
+class SupervisorUpdate(BaseModel):
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class SupervisorResponse(SupervisorBase):
+    id: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

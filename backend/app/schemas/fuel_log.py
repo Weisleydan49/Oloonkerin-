@@ -1,20 +1,28 @@
-from sqlalchemy import Column, String, ForeignKey, Numeric, DateTime
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from uuid import uuid4
-from ..core.database import Base
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
 
-class FuelLog(Base):
-    __tablename__ = "fuel_logs"
+class FuelLogBase(BaseModel):
+    date: datetime
+    vehicle_id: str
+    litres_used: float
+    cost_ksh: float
+    notes: Optional[str] = None
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid4()))
-    date = Column(DateTime, nullable=False)
-    vehicle_id = Column(String, ForeignKey("vehicles.id"), nullable=False)
-    litres = Column(Numeric(10, 2), nullable=False)
-    cost_ksh = Column(Numeric(12, 2), nullable=False)
-    notes = Column(String, nullable=True)                       # e.g. "Bulk diesel from tank"
-    created_by_id = Column(String, ForeignKey("users.id"), nullable=False)
-    created_at = Column(DateTime, server_default=func.now())
+class FuelLogCreate(FuelLogBase):
+    pass
 
-    vehicle = relationship("Vehicle", back_populates="fuel_logs")
-    created_by = relationship("User", back_populates="fuel_logs")
+class FuelLogUpdate(BaseModel):
+    date: Optional[datetime] = None
+    vehicle_id: Optional[str] = None
+    litres_used: Optional[float] = None
+    cost_ksh: Optional[float] = None
+    notes: Optional[str] = None
+
+class FuelLogResponse(FuelLogBase):
+    id: str
+    created_by_id: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

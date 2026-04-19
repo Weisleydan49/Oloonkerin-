@@ -1,6 +1,9 @@
 import asyncio
 import os
+import sys
 from logging.config import fileConfig
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from alembic import context
 from sqlalchemy import pool
@@ -17,7 +20,8 @@ config = context.config
 
 # Override sqlalchemy.url from our .env via settings
 settings = get_settings()
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+# Escape '%' as '%%' for configparser interpolation
+config.set_main_option("sqlalchemy.url", settings.DATABASE_URL.replace("%", "%%"))
 
 # Interpret the config file for Python logging
 if config.config_file_name is not None:

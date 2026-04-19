@@ -8,6 +8,7 @@ from app.core.config import get_settings
 from app.models.user import User, Role
 from app.schemas.user import Token, UserCreate, UserResponse
 from app.core.dependencies import get_current_user
+from sqlalchemy import text
 
 settings = get_settings()
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -17,7 +18,7 @@ async def register_user(user_in: UserCreate, db: AsyncSession = Depends(get_db))
     """Register a new admin user (only for initial setup)"""
     # Check if user already exists
     result = await db.execute(
-        "SELECT id FROM users WHERE email = :email", 
+        text("SELECT id FROM users WHERE email = :email"), 
         {"email": user_in.email}
     )
     if result.scalar_one_or_none():
@@ -50,7 +51,7 @@ async def login(
 ):
     """Login with email and password"""
     result = await db.execute(
-        "SELECT * FROM users WHERE email = :email AND is_active = true",
+        text("SELECT * FROM users WHERE email = :email AND is_active = true"),
         {"email": form_data.username}
     )
     user: User = result.scalar_one_or_none()

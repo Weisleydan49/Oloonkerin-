@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..models.user import User, Role
 from .config import get_settings
 from .database import get_db
+from sqlalchemy import text
 
 settings = get_settings()
 
@@ -29,7 +30,7 @@ async def get_current_user(
 
     # Fetch user from database
     result = await db.execute(
-        "SELECT * FROM users WHERE email = :email AND is_active = true",
+        text("SELECT * FROM users WHERE email = :email AND is_active = true"),
         {"email": email}
     )
     user = result.scalar_one_or_none()

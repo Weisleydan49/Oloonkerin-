@@ -1,34 +1,35 @@
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, ARRAY, Enum as SQLEnum
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from uuid import uuid4
-import enum
-from ..core.database import Base
+from pydantic import BaseModel
+from typing import Optional, List
+from datetime import datetime
+from ..models.vehicle import VehicleType
 
-class VehicleType(str, enum.Enum):
-    TRUCK = "truck"
-    EXCAVATOR = "excavator"
-    BULLDOZER = "bulldozer"
-    GRADER = "grader"
-    LOADER = "loader"
-    OTHER = "other"
+class VehicleBase(BaseModel):
+    type: VehicleType
+    plate_number: str
+    make_model: str
+    year: Optional[str] = None
+    tire_serials: Optional[List[str]] = None
+    current_project_id: Optional[str] = None
+    driver_id: Optional[str] = None
+    is_active: bool = True
 
-class Vehicle(Base):
-    __tablename__ = "vehicles"
+class VehicleCreate(VehicleBase):
+    pass
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid4()))
-    type = Column(SQLEnum(VehicleType), nullable=False)
-    plate_number = Column(String, unique=True, nullable=False)
-    make_model = Column(String, nullable=False)
-    year = Column(String, nullable=True)
-    tire_serials = Column(ARRAY(String))                     # List of tire serial numbers
-    current_project_id = Column(String, ForeignKey("projects.id"), nullable=True)
-    driver_id = Column(String, ForeignKey("drivers.id"), nullable=True)
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+class VehicleUpdate(BaseModel):
+    type: Optional[VehicleType] = None
+    plate_number: Optional[str] = None
+    make_model: Optional[str] = None
+    year: Optional[str] = None
+    tire_serials: Optional[List[str]] = None
+    current_project_id: Optional[str] = None
+    driver_id: Optional[str] = None
+    is_active: Optional[bool] = None
 
-    current_project = relationship("Project", back_populates="vehicles")
-    driver = relationship("Driver", back_populates="vehicle", uselist=False)
-    fuel_logs = relationship("FuelLog", back_populates="vehicle", cascade="all, delete-orphan")
-    maintenance_logs = relationship("MaintenanceLog", back_populates="vehicle", cascade="all, delete-orphan")
+class VehicleResponse(VehicleBase):
+    id: str
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
