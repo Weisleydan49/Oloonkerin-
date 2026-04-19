@@ -19,7 +19,7 @@ class MachineSet(Base):
     supervisor_id = Column(String, ForeignKey("supervisors.id"), nullable=False)
     project_id = Column(String, ForeignKey("projects.id"), nullable=False)
     target_value = Column(Numeric(12, 2), nullable=False)      # e.g. 1200.00
-    target_unit = Column(String, nullable=False)               # "trips", "cubic meters", "hours", etc.
+    target_unit = Column(String, nullable=False)               # "trips", "cubic meters", "hours"
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
