@@ -1,20 +1,27 @@
-
+import { useEffect, useState } from 'react';
 import { Truck, Droplets, MapPin, TrendingUp, AlertCircle } from 'lucide-react';
+import { getProjects } from '../api/projects';
+import { getFuelLogs } from '../api/fuel';
+import { getVehicles } from '../api/vehicles';
 
-const StatCard = ({ title, value, icon: Icon, trend, trendValue, description }: any) => (
+const StatCard = ({ title, value, icon: Icon, trend, trendValue, description, loading }: any) => (
   <div className="glass rounded-xl p-6 relative overflow-hidden group hover:border-primary/50 transition-colors">
     <div className="flex justify-between items-start mb-4">
       <div>
         <p className="text-sm font-medium text-muted-foreground">{title}</p>
-        <h3 className="text-3xl font-bold mt-1 text-foreground">{value}</h3>
+        {loading ? (
+          <div className="h-9 w-24 bg-secondary animate-pulse rounded mt-1"></div>
+        ) : (
+          <h3 className="text-3xl font-bold mt-1 text-foreground">{value}</h3>
+        )}
       </div>
       <div className="p-3 bg-primary/10 text-primary rounded-lg">
         <Icon className="w-5 h-5" />
       </div>
     </div>
     <div className="flex items-center text-sm">
-      <span className={`font-medium flex items-center ${trend === 'up' ? 'text-emerald-500' : 'text-rose-500'}`}>
-        {trend === 'up' ? <TrendingUp className="w-4 h-4 mr-1" /> : <AlertCircle className="w-4 h-4 mr-1" />}
+      <span className={`font-medium flex items-center ${trend === 'up' ? 'text-emerald-500' : trend === 'down' ? 'text-rose-500' : 'text-muted-foreground'}`}>
+        {trend === 'up' ? <TrendingUp className="w-4 h-4 mr-1" /> : trend === 'down' ? <AlertCircle className="w-4 h-4 mr-1" /> : null}
         {trendValue}
       </span>
       <span className="text-muted-foreground ml-2">{description}</span>
@@ -24,6 +31,41 @@ const StatCard = ({ title, value, icon: Icon, trend, trendValue, description }: 
 );
 
 export const Dashboard = () => {
+  const [stats, setStats] = useState({
+    projectsCount: 0,
+    vehiclesCount: 0,
+    totalFuelLitres: 0,
+    recentFuelLogs: [] as any[],
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [projects, vehicles, fuelLogs] = await Promise.all([
+          getProjects(),
+          getVehicles(),
+          getFuelLogs()
+        ]);
+
+        const totalLitres = fuelLogs.reduce((acc, log) => acc + log.litres_used, 0);
+
+        setStats({
+          projectsCount: projects.length,
+          vehiclesCount: vehicles.length,
+          totalFuelLitres: totalLitres,
+          recentFuelLogs: fuelLogs.slice(0, 5)
+        });
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-end">
@@ -41,41 +83,65 @@ export const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard 
           title="Active Machines" 
-          value="42" 
+          value={stats.vehiclesCount} 
           icon={Truck} 
           trend="up" 
-          trendValue="+3" 
-          description="from last week" 
+          trendValue="Live" 
+          description="Total registered" 
+          loading={loading}
         />
         <StatCard 
           title="Fuel Consumed" 
-          value="12,450 L" 
+          value={`${stats.totalFuelLitres.toLocaleString()} L`} 
           icon={Droplets} 
           trend="up" 
-          trendValue="+12%" 
-          description="from yesterday" 
+          trendValue="Live" 
+          description="Total recorded" 
+          loading={loading}
         />
         <StatCard 
           title="Active Projects" 
-          value="8" 
+          value={stats.projectsCount} 
           icon={MapPin} 
-          trend="down" 
-          trendValue="0" 
-          description="same as last month" 
+          trend="up" 
+          trendValue="Live" 
+          description="Currently active" 
+          loading={loading}
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 glass rounded-xl border border-border/50 flex flex-col h-96">
           <div className="p-6 border-b border-border/50 flex justify-between items-center">
-            <h3 className="font-semibold text-lg">Fuel Consumption Trend</h3>
-            <select className="bg-secondary text-sm rounded-md border border-border/50 px-3 py-1.5 outline-none">
-              <option>Last 7 Days</option>
-              <option>This Month</option>
-            </select>
+            <h3 className="font-semibold text-lg">Recent Fuel Logs</h3>
           </div>
-          <div className="flex-1 flex items-center justify-center text-muted-foreground">
-            <p>Chart visualization placeholder</p>
+          <div className="flex-1 overflow-auto p-4">
+            {loading ? (
+              <div className="flex h-full items-center justify-center text-muted-foreground">Loading logs...</div>
+            ) : stats.recentFuelLogs.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-muted-foreground">No fuel logs found.</div>
+            ) : (
+              <table className="w-full text-sm text-left">
+                <thead className="text-xs text-muted-foreground uppercase bg-secondary/50">
+                  <tr>
+                    <th className="px-4 py-3 rounded-tl-lg">Date</th>
+                    <th className="px-4 py-3">Vehicle</th>
+                    <th className="px-4 py-3">Litres</th>
+                    <th className="px-4 py-3 rounded-tr-lg">Cost (KSH)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.recentFuelLogs.map((log) => (
+                    <tr key={log.id} className="border-b border-border/50 hover:bg-secondary/30">
+                      <td className="px-4 py-3">{new Date(log.date).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 font-medium">{log.vehicle_id.split('-')[0]}</td>
+                      <td className="px-4 py-3">{log.litres_used} L</td>
+                      <td className="px-4 py-3">{log.cost_ksh.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
 
@@ -83,18 +149,10 @@ export const Dashboard = () => {
           <div className="p-6 border-b border-border/50">
             <h3 className="font-semibold text-lg">Recent Alerts</h3>
           </div>
-          <div className="p-4 space-y-4 overflow-y-auto">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="flex gap-3 p-3 rounded-lg hover:bg-secondary/50 transition-colors">
-                <div className="mt-0.5">
-                  <AlertCircle className="w-5 h-5 text-rose-500" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">High fuel usage detected</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Truck KCD 123X • 2 hours ago</p>
-                </div>
-              </div>
-            ))}
+          <div className="p-4 space-y-4 overflow-y-auto flex-1">
+            <div className="flex h-full items-center justify-center text-muted-foreground">
+              No recent alerts
+            </div>
           </div>
         </div>
       </div>
