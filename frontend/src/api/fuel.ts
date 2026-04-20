@@ -28,3 +28,12 @@ export const createFuelLog = async (log: FuelLogCreate): Promise<FuelLog> => {
   const { data } = await apiClient.post('/fuel/', log);
   return data;
 };
+
+export const updateFuelLog = async (id: string, log: Partial<FuelLogCreate>): Promise<FuelLog> => {
+  const { data } = await apiClient.put(`/fuel/${id}`, log);
+  return data;
+};
+
+export const deleteFuelLog = async (id: string): Promise<void> => {
+  await apiClient.delete(`/fuel/${id}`);
+};

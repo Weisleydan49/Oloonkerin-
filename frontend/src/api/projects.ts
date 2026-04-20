@@ -24,3 +24,12 @@ export const createProject = async (project: ProjectCreate): Promise<Project> =>
   const { data } = await apiClient.post('/projects/', project);
   return data;
 };
+
+export const updateProject = async (id: string, project: Partial<ProjectCreate>): Promise<Project> => {
+  const { data } = await apiClient.put(`/projects/${id}`, project);
+  return data;
+};
+
+export const deleteProject = async (id: string): Promise<void> => {
+  await apiClient.delete(`/projects/${id}`);
+};

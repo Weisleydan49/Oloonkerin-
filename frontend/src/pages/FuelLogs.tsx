@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Plus } from 'lucide-react';
-import { getFuelLogs, createFuelLog, type FuelLog, type FuelLogCreate } from '../api/fuel';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { getFuelLogs, createFuelLog, updateFuelLog, deleteFuelLog, type FuelLog, type FuelLogCreate } from '../api/fuel';
 import { getVehicles, type Vehicle } from '../api/vehicles';
 
 export const FuelLogs = () => {
@@ -8,6 +8,7 @@ export const FuelLogs = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   
   // Form State
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -38,24 +39,57 @@ export const FuelLogs = () => {
     fetchData();
   }, []);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const resetForm = () => {
+    setDate(new Date().toISOString().split('T')[0]);
+    setVehicleId(vehicles.length > 0 ? vehicles[0].id : '');
+    setLitresUsed('');
+    setCostKsh('');
+    setNotes('');
+    setEditingId(null);
+    setIsModalOpen(false);
+  };
+
+  const openEditModal = (log: FuelLog) => {
+    setDate(log.date.split('T')[0]);
+    setVehicleId(log.vehicle_id);
+    setLitresUsed(log.litres.toString());
+    setCostKsh(log.cost_ksh.toString());
+    setNotes(log.notes || '');
+    setEditingId(log.id);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this fuel log? This cannot be undone.')) return;
+    try {
+      await deleteFuelLog(id);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to delete fuel log:', error);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const newLog: FuelLogCreate = { 
+      const payload: Partial<FuelLogCreate> = { 
         date: new Date(date).toISOString(),
         vehicle_id: vehicleId,
         litres: parseFloat(litresUsed),
         cost_ksh: parseFloat(costKsh),
         notes: notes || undefined
       };
-      await createFuelLog(newLog);
-      setIsModalOpen(false);
-      setLitresUsed('');
-      setCostKsh('');
-      setNotes('');
+      
+      if (editingId) {
+        await updateFuelLog(editingId, payload);
+      } else {
+        await createFuelLog(payload as FuelLogCreate);
+      }
+      
+      resetForm();
       fetchData();
     } catch (error) {
-      console.error("Failed to create fuel log:", error);
+      console.error("Failed to save fuel log:", error);
     }
   };
 
@@ -67,7 +101,10 @@ export const FuelLogs = () => {
           <p className="text-muted-foreground mt-1">Track diesel consumption and costs across the fleet.</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            resetForm();
+            setIsModalOpen(true);
+          }}
           className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium text-sm hover:opacity-90 transition-opacity"
         >
           <Plus className="w-4 h-4" />
@@ -84,13 +121,14 @@ export const FuelLogs = () => {
               <th className="px-6 py-4">Litres</th>
               <th className="px-6 py-4">Cost (KSH)</th>
               <th className="px-6 py-4">Notes</th>
+              <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">Loading...</td></tr>
+              <tr><td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">Loading...</td></tr>
             ) : logs.length === 0 ? (
-              <tr><td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">No fuel logs found.</td></tr>
+              <tr><td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">No fuel logs found.</td></tr>
             ) : (
               logs.map((log) => {
                 const vehicle = vehicles.find(v => v.id === log.vehicle_id);
@@ -101,6 +139,22 @@ export const FuelLogs = () => {
                     <td className="px-6 py-4">{log.litres} L</td>
                     <td className="px-6 py-4 text-emerald-500 font-medium">KSH {log.cost_ksh.toLocaleString()}</td>
                     <td className="px-6 py-4 text-muted-foreground">{log.notes || '-'}</td>
+                    <td className="px-6 py-4 text-right space-x-2">
+                      <button 
+                        onClick={() => openEditModal(log)}
+                        className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded transition-colors"
+                        title="Edit"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(log.id)}
+                        className="p-1.5 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 rounded transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
                   </tr>
                 );
               })
@@ -112,8 +166,8 @@ export const FuelLogs = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="glass p-6 rounded-xl border border-border/50 w-full max-w-md shadow-2xl">
-            <h3 className="text-xl font-bold mb-4">Add Fuel Entry</h3>
-            <form onSubmit={handleCreate} className="space-y-4">
+            <h3 className="text-xl font-bold mb-4">{editingId ? 'Edit Fuel Entry' : 'Add Fuel Entry'}</h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Date</label>
                 <input 
@@ -176,7 +230,7 @@ export const FuelLogs = () => {
               <div className="flex justify-end gap-3 mt-6">
                 <button 
                   type="button" 
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={resetForm}
                   className="px-4 py-2 text-sm font-medium hover:bg-secondary rounded-md"
                 >
                   Cancel

@@ -28,3 +28,12 @@ export const createMaintenanceLog = async (log: MaintenanceLogCreate): Promise<M
   const { data } = await apiClient.post('/maintenance/', log);
   return data;
 };
+
+export const updateMaintenanceLog = async (id: string, log: Partial<MaintenanceLogCreate>): Promise<MaintenanceLog> => {
+  const { data } = await apiClient.put(`/maintenance/${id}`, log);
+  return data;
+};
+
+export const deleteMaintenanceLog = async (id: string): Promise<void> => {
+  await apiClient.delete(`/maintenance/${id}`);
+};
