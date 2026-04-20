@@ -60,3 +60,18 @@ async def update_vehicle(
     await db.commit()
     await db.refresh(vehicle)
     return vehicle
+
+@router.delete("/{vehicle_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_vehicle(
+    vehicle_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_admin: dict = Depends(get_current_admin)
+):
+    result = await db.execute(select(Vehicle).where(Vehicle.id == vehicle_id))
+    vehicle = result.scalar_one_or_none()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+        
+    vehicle.is_active = False
+    await db.commit()
+    return None

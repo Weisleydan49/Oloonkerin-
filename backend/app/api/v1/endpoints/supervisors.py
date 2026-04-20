@@ -40,3 +40,39 @@ async def get_supervisor(
     if not supervisor:
         raise HTTPException(status_code=404, detail="Supervisor not found")
     return supervisor
+
+@router.put("/{supervisor_id}", response_model=SupervisorResponse)
+async def update_supervisor(
+    supervisor_id: str,
+    supervisor_in: SupervisorUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_admin: dict = Depends(get_current_admin)
+):
+    result = await db.execute(select(Supervisor).where(Supervisor.id == supervisor_id))
+    supervisor = result.scalar_one_or_none()
+    if not supervisor:
+        raise HTTPException(status_code=404, detail="Supervisor not found")
+        
+    update_data = supervisor_in.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(supervisor, field, value)
+        
+    await db.commit()
+    await db.refresh(supervisor)
+    return supervisor
+
+@router.delete("/{supervisor_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_supervisor(
+    supervisor_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_admin: dict = Depends(get_current_admin)
+):
+    result = await db.execute(select(Supervisor).where(Supervisor.id == supervisor_id))
+    supervisor = result.scalar_one_or_none()
+    if not supervisor:
+        raise HTTPException(status_code=404, detail="Supervisor not found")
+        
+    # Soft delete
+    supervisor.is_active = False
+    await db.commit()
+    return None

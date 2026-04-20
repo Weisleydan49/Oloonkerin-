@@ -5,6 +5,7 @@ from datetime import datetime
 class SupervisorBase(BaseModel):
     full_name: str
     phone: str
+    base_salary: float
     is_active: bool = True
 
 class SupervisorCreate(SupervisorBase):
@@ -13,6 +14,7 @@ class SupervisorCreate(SupervisorBase):
 class SupervisorUpdate(BaseModel):
     full_name: Optional[str] = None
     phone: Optional[str] = None
+    base_salary: Optional[float] = None
     is_active: Optional[bool] = None
 
 class SupervisorResponse(SupervisorBase):

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Plus, Users, HardHat } from 'lucide-react';
+import { Plus, Users, HardHat, Pencil, Trash2 } from 'lucide-react';
 import { 
-  getDrivers, createDriver, type Driver, type DriverCreate,
-  getSupervisors, createSupervisor, type Supervisor, type SupervisorCreate 
+  getDrivers, createDriver, updateDriver, deleteDriver, type Driver, type DriverCreate,
+  getSupervisors, createSupervisor, updateSupervisor, deleteSupervisor, type Supervisor, type SupervisorCreate 
 } from '../api/people';
 
 export const People = () => {
@@ -12,11 +12,14 @@ export const People = () => {
   const [supervisors, setSupervisors] = useState<Supervisor[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   
   // Form State
-  const [fullName, setFullName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [idNumber, setIdNumber] = useState('');
+  const [baseSalary, setBaseSalary] = useState('');
 
   const fetchData = async () => {
     try {
@@ -37,31 +40,73 @@ export const People = () => {
     fetchData();
   }, []);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const resetForm = () => {
+    setFirstName('');
+    setLastName('');
+    setPhone('');
+    setIdNumber('');
+    setBaseSalary('');
+    setEditingId(null);
+    setIsModalOpen(false);
+  };
+
+  const openEditModal = (person: any) => {
+    const names = person.full_name.split(' ');
+    setFirstName(names[0] || '');
+    setLastName(names.slice(1).join(' ') || '');
+    setPhone(person.phone || '');
+    setIdNumber(person.id_number || '');
+    setBaseSalary(person.base_salary?.toString() || '');
+    setEditingId(person.id);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this record?')) return;
+    try {
+      if (activeTab === 'drivers') {
+        await deleteDriver(id);
+      } else {
+        await deleteSupervisor(id);
+      }
+      fetchData();
+    } catch (error) {
+      console.error('Failed to delete record:', error);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       if (activeTab === 'drivers') {
-        const newDriver: DriverCreate = {
-          full_name: fullName,
+        const payload: Partial<DriverCreate> = {
+          full_name: `${firstName} ${lastName}`.trim(),
           phone: phone,
           id_number: idNumber,
+          base_salary: parseFloat(baseSalary)
         };
-        await createDriver(newDriver);
+        if (editingId) {
+          await updateDriver(editingId, payload);
+        } else {
+          await createDriver(payload as DriverCreate);
+        }
       } else {
-        const newSupervisor: SupervisorCreate = {
-          full_name: fullName,
+        const payload: Partial<SupervisorCreate> = {
+          full_name: `${firstName} ${lastName}`.trim(),
           phone: phone,
+          base_salary: parseFloat(baseSalary)
         };
-        await createSupervisor(newSupervisor);
+        if (editingId) {
+          await updateSupervisor(editingId, payload);
+        } else {
+          await createSupervisor(payload as SupervisorCreate);
+        }
       }
       
-      setIsModalOpen(false);
-      setFullName('');
-      setPhone('');
-      setIdNumber('');
+      resetForm();
       fetchData();
     } catch (error) {
-      console.error(`Failed to create ${activeTab}:`, error);
+      console.error(`Failed to save ${activeTab}:`, error);
     }
   };
 
@@ -73,7 +118,10 @@ export const People = () => {
           <p className="text-muted-foreground mt-1">Manage personnel, licenses, and base salaries.</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            resetForm();
+            setIsModalOpen(true);
+          }}
           className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium text-sm hover:opacity-90 transition-opacity"
         >
           <Plus className="w-4 h-4" />
@@ -109,26 +157,45 @@ export const People = () => {
               <th className="px-6 py-4">Name</th>
               <th className="px-6 py-4">Phone</th>
               {activeTab === 'drivers' && <th className="px-6 py-4">ID Number</th>}
+              <th className="px-6 py-4">Base Salary (KSH)</th>
               <th className="px-6 py-4">Status</th>
+              <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">Loading...</td></tr>
+              <tr><td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">Loading...</td></tr>
             ) : activeTab === 'drivers' && drivers.length === 0 ? (
-              <tr><td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">No drivers found.</td></tr>
+              <tr><td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">No drivers found.</td></tr>
             ) : activeTab === 'supervisors' && supervisors.length === 0 ? (
-              <tr><td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">No supervisors found.</td></tr>
+              <tr><td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">No supervisors found.</td></tr>
             ) : (
               (activeTab === 'drivers' ? drivers : supervisors).map((person: any) => (
                 <tr key={person.id} className="border-b border-border/50 last:border-0 hover:bg-secondary/30">
                   <td className="px-6 py-4 font-bold text-foreground">{person.full_name}</td>
                   <td className="px-6 py-4 text-muted-foreground">{person.phone}</td>
                   {activeTab === 'drivers' && <td className="px-6 py-4 font-medium font-mono text-primary">{person.id_number}</td>}
+                  <td className="px-6 py-4 font-medium">KSH {person.base_salary?.toLocaleString() || '0'}</td>
                   <td className="px-6 py-4">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${person.is_active ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
                       {person.is_active ? 'Active' : 'Inactive'}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 text-right space-x-2">
+                    <button 
+                      onClick={() => openEditModal(person)}
+                      className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded transition-colors"
+                      title="Edit"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(person.id)}
+                      className="p-1.5 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 rounded transition-colors"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </td>
                 </tr>
               ))
@@ -140,15 +207,24 @@ export const People = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="glass p-6 rounded-xl border border-border/50 w-full max-w-md shadow-2xl">
-            <h3 className="text-xl font-bold mb-4">Add New {activeTab === 'drivers' ? 'Driver' : 'Supervisor'}</h3>
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div className="grid grid-cols-1 gap-4">
+            <h3 className="text-xl font-bold mb-4">{editingId ? 'Edit' : 'Add New'} {activeTab === 'drivers' ? 'Driver' : 'Supervisor'}</h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Full Name</label>
+                  <label className="block text-sm font-medium mb-1">First Name</label>
                   <input 
                     required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full bg-secondary border border-border/50 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Last Name</label>
+                  <input 
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
                     className="w-full bg-secondary border border-border/50 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary" 
                   />
                 </div>
@@ -177,11 +253,23 @@ export const People = () => {
                   />
                 </div>
               )}
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Base Salary (KSH)</label>
+                <input 
+                  type="number"
+                  required
+                  value={baseSalary}
+                  onChange={(e) => setBaseSalary(e.target.value)}
+                  className="w-full bg-secondary border border-border/50 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary" 
+                  placeholder="e.g. 40000" 
+                />
+              </div>
               
               <div className="flex justify-end gap-3 mt-6">
                 <button 
                   type="button" 
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={resetForm}
                   className="px-4 py-2 text-sm font-medium hover:bg-secondary rounded-md"
                 >
                   Cancel

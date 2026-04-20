@@ -26,3 +26,12 @@ export const createVehicle = async (vehicle: VehicleCreate): Promise<Vehicle> =>
   const { data } = await apiClient.post('/vehicles/', vehicle);
   return data;
 };
+
+export const updateVehicle = async (id: string, vehicle: Partial<VehicleCreate>): Promise<Vehicle> => {
+  const { data } = await apiClient.put(`/vehicles/${id}`, vehicle);
+  return data;
+};
+
+export const deleteVehicle = async (id: string): Promise<void> => {
+  await apiClient.delete(`/vehicles/${id}`);
+};

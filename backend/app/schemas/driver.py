@@ -4,8 +4,9 @@ from datetime import datetime
 
 class DriverBase(BaseModel):
     full_name: str
-    license_number: str
+    id_number: str
     phone: str
+    base_salary: float
     is_active: bool = True
 
 class DriverCreate(DriverBase):
@@ -13,8 +14,9 @@ class DriverCreate(DriverBase):
 
 class DriverUpdate(BaseModel):
     full_name: Optional[str] = None
-    license_number: Optional[str] = None
+    id_number: Optional[str] = None
     phone: Optional[str] = None
+    base_salary: Optional[float] = None
     is_active: Optional[bool] = None
 
 class DriverResponse(DriverBase):
