@@ -2,10 +2,10 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from ..models.user import User, Role
 from .config import get_settings
 from .database import get_db
-from sqlalchemy import text
 
 settings = get_settings()
 
@@ -28,10 +28,9 @@ async def get_current_user(
     except JWTError:
         raise credentials_exception
 
-    # Fetch user from database
+    # Fetch user from database using ORM (returns a proper User object)
     result = await db.execute(
-        text("SELECT * FROM users WHERE email = :email AND is_active = true"),
-        {"email": email}
+        select(User).where(User.email == email, User.is_active == True)
     )
     user = result.scalar_one_or_none()
 

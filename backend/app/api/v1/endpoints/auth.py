@@ -50,9 +50,9 @@ async def login(
     db: AsyncSession = Depends(get_db)
 ):
     """Login with email and password"""
+    from sqlalchemy import select
     result = await db.execute(
-        text("SELECT * FROM users WHERE email = :email AND is_active = true"),
-        {"email": form_data.username}
+        select(User).where(User.email == form_data.username, User.is_active == True)
     )
     user: User = result.scalar_one_or_none()
 

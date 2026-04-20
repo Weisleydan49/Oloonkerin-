@@ -17,7 +17,7 @@ class Vehicle(Base):
     __tablename__ = "vehicles"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid4()))
-    type = Column(SQLEnum(VehicleType), nullable=False)
+    type = Column(SQLEnum(VehicleType, name="vehicle_type"), nullable=False)
     plate_number = Column(String, unique=True, nullable=False)
     make_model = Column(String, nullable=False)
     year = Column(String, nullable=True)

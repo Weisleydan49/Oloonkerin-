@@ -17,7 +17,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
     full_name: Mapped[str] = mapped_column(String, nullable=True)
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
-    role: Mapped[Role] = mapped_column(SQLEnum(Role, name="role_type"), default=Role.USER, nullable=False)
+    role: Mapped[Role] = mapped_column(SQLEnum(Role, name="role_type", values_callable=lambda x: [e.value for e in x]), default=Role.USER, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
