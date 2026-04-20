@@ -33,3 +33,12 @@ export const createPayrollRecord = async (record: PayrollRecordCreate): Promise<
   const { data } = await apiClient.post('/payroll/', record);
   return data;
 };
+
+export const updatePayrollRecord = async (id: string, record: Partial<PayrollRecordCreate>): Promise<PayrollRecord> => {
+  const { data } = await apiClient.put(`/payroll/${id}`, record);
+  return data;
+};
+
+export const deletePayrollRecord = async (id: string): Promise<void> => {
+  await apiClient.delete(`/payroll/${id}`);
+};
