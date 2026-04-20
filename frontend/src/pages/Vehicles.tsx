@@ -8,7 +8,7 @@ export const Vehicles = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Form State
-  const [type, setType] = useState('Truck');
+  const [type, setType] = useState('truck');
   const [plateNumber, setPlateNumber] = useState('');
   const [makeModel, setMakeModel] = useState('');
   const [year, setYear] = useState('');
@@ -39,7 +39,7 @@ export const Vehicles = () => {
       };
       await createVehicle(newVehicle);
       setIsModalOpen(false);
-      setType('Truck');
+      setType('truck');
       setPlateNumber('');
       setMakeModel('');
       setYear('');
@@ -117,12 +117,12 @@ export const Vehicles = () => {
                   onChange={(e) => setType(e.target.value)}
                   className="w-full bg-secondary border border-border/50 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
                 >
-                  <option>Truck</option>
-                  <option>Excavator</option>
-                  <option>Bulldozer</option>
-                  <option>Grader</option>
-                  <option>Pickup</option>
-                  <option>Other</option>
+                  <option value="truck">Truck</option>
+                  <option value="excavator">Excavator</option>
+                  <option value="bulldozer">Bulldozer</option>
+                  <option value="grader">Grader</option>
+                  <option value="loader">Loader</option>
+                  <option value="other">Other</option>
                 </select>
               </div>
               <div>

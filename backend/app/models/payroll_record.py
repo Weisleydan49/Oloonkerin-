@@ -15,7 +15,7 @@ class PayrollRecord(Base):
     id = Column(String, primary_key=True, default=lambda: str(uuid4()))
     month = Column(DateTime, nullable=False)                    # First day of the month
     employee_id = Column(String, nullable=False)
-    employee_type = Column(SQLEnum(EmployeeType, name="employee_type"), nullable=False)
+    employee_type = Column(SQLEnum(EmployeeType, name="employee_type", values_callable=lambda x: [e.value for e in x]), nullable=False)
     basic_salary = Column(Numeric(12, 2), nullable=False)
     allowances = Column(Numeric(12, 2), default=0)
     sha = Column(Numeric(10, 2), default=0)                     # Social Health Authority
