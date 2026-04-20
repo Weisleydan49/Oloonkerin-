@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List
-from ...core.database import get_db
-from ...core.dependencies import get_current_admin
-from ...models.machine_set import MachineSet
-from ...schemas.machine_set import MachineSetCreate, MachineSetUpdate, MachineSetResponse
+from app.core.database import get_db
+from app.core.dependencies import get_current_admin
+from app.models.machine_set import MachineSet
+from app.schemas.machine_set import MachineSetCreate, MachineSetUpdate, MachineSetResponse
 
 router = APIRouter(prefix="/machine-sets", tags=["Machine Sets"])
 

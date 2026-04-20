@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
-from ...core.database import get_db
-from ...core.dependencies import get_current_admin
-from ...models.fuel_log import FuelLog
-from ...schemas.fuel_log import FuelLogCreate, FuelLogResponse
+from app.core.database import get_db
+from app.core.dependencies import get_current_admin
+from app.models.fuel_log import FuelLog
+from app.schemas.fuel_log import FuelLogCreate, FuelLogResponse
 from sqlalchemy import select
 
 router = APIRouter(prefix="/fuel", tags=["Fuel Logs"])

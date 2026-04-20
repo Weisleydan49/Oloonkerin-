@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
-from ...core.database import get_db
-from ...core.dependencies import get_current_admin
-from ...models.maintenance_log import MaintenanceLog
-from ...schemas.maintenance_log import MaintenanceLogCreate, MaintenanceLogResponse
+from app.core.database import get_db
+from app.core.dependencies import get_current_admin
+from app.models.maintenance_log import MaintenanceLog
+from app.schemas.maintenance_log import MaintenanceLogCreate, MaintenanceLogResponse
 from sqlalchemy import select
 
 router = APIRouter(prefix="/maintenance", tags=["Maintenance"])

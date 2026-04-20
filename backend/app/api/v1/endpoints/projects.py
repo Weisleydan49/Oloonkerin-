@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from ...core.database import get_db
-from ...core.dependencies import get_current_admin
-from ...models.project import Project
-from ...schemas.project import ProjectCreate, ProjectUpdate, ProjectResponse
+from app.core.database import get_db
+from app.core.dependencies import get_current_admin
+from app.models.project import Project
+from app.schemas.project import ProjectCreate, ProjectUpdate, ProjectResponse
 from sqlalchemy import select
 from typing import List
 

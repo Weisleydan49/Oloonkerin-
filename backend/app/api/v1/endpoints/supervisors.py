@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List
-from ...core.database import get_db
-from ...core.dependencies import get_current_admin
-from ...models.supervisor import Supervisor
-from ...schemas.supervisor import SupervisorCreate, SupervisorUpdate, SupervisorResponse
+from app.core.database import get_db
+from app.core.dependencies import get_current_admin
+from app.models.supervisor import Supervisor
+from app.schemas.supervisor import SupervisorCreate, SupervisorUpdate, SupervisorResponse
 
 router = APIRouter(prefix="/supervisors", tags=["Supervisors"])
 

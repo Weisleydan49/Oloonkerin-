@@ -14,4 +14,10 @@ class Supervisor(Base):
     created_at = Column(DateTime, server_default=func.now())
 
     machine_sets = relationship("MachineSet", back_populates="supervisor")
-    payroll_records = relationship("PayrollRecord", back_populates="supervisor", cascade="all, delete-orphan")
+    payroll_records = relationship(
+        "PayrollRecord",
+        primaryjoin="and_(Supervisor.id==PayrollRecord.employee_id, PayrollRecord.employee_type=='supervisor')",
+        foreign_keys="[PayrollRecord.employee_id]",
+        back_populates="supervisor",
+        cascade="all, delete-orphan"
+    )

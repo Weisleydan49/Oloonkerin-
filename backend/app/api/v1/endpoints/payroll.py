@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List
-from ...core.database import get_db
-from ...core.dependencies import get_current_admin
-from ...models.payroll_record import PayrollRecord
-from ...schemas.payroll_record import PayrollRecordCreate, PayrollRecordUpdate, PayrollRecordResponse
+from app.core.database import get_db
+from app.core.dependencies import get_current_admin
+from app.models.payroll_record import PayrollRecord
+from app.schemas.payroll_record import PayrollRecordCreate, PayrollRecordUpdate, PayrollRecordResponse
 
 router = APIRouter(prefix="/payroll", tags=["Payroll"])
 

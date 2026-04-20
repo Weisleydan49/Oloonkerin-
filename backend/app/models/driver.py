@@ -15,4 +15,10 @@ class Driver(Base):
     created_at = Column(DateTime, server_default=func.now())
 
     vehicle = relationship("Vehicle", back_populates="driver", uselist=False)
-    payroll_records = relationship("PayrollRecord", back_populates="driver", cascade="all, delete-orphan")
+    payroll_records = relationship(
+        "PayrollRecord",
+        primaryjoin="and_(Driver.id==PayrollRecord.employee_id, PayrollRecord.employee_type=='driver')",
+        foreign_keys="[PayrollRecord.employee_id]",
+        back_populates="driver",
+        cascade="all, delete-orphan"
+    )

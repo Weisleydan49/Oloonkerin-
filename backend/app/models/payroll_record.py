@@ -26,13 +26,17 @@ class PayrollRecord(Base):
     # Relationships (one of these will be populated)
     driver = relationship(
         "Driver",
-        primaryjoin="and_(foreign(PayrollRecord.employee_id)==Driver.id, PayrollRecord.employee_type=='driver')",
+        primaryjoin="and_(PayrollRecord.employee_id==Driver.id, PayrollRecord.employee_type=='driver')",
+        foreign_keys="[PayrollRecord.employee_id]",
+        back_populates="payroll_records",
         uselist=False,
         viewonly=True
     )
     supervisor = relationship(
         "Supervisor",
-        primaryjoin="and_(foreign(PayrollRecord.employee_id)==Supervisor.id, PayrollRecord.employee_type=='supervisor')",
+        primaryjoin="and_(PayrollRecord.employee_id==Supervisor.id, PayrollRecord.employee_type=='supervisor')",
+        foreign_keys="[PayrollRecord.employee_id]",
+        back_populates="payroll_records",
         uselist=False,
         viewonly=True
     )
