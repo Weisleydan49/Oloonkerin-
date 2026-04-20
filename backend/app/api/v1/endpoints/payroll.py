@@ -28,3 +28,38 @@ async def list_payroll_records(
 ):
     result = await db.execute(select(PayrollRecord).order_by(PayrollRecord.month.desc()))
     return result.scalars().all()
+
+@router.put("/{record_id}", response_model=PayrollRecordResponse)
+async def update_payroll_record(
+    record_id: str,
+    record_in: PayrollRecordUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_admin: dict = Depends(get_current_admin)
+):
+    result = await db.execute(select(PayrollRecord).where(PayrollRecord.id == record_id))
+    record = result.scalar_one_or_none()
+    if not record:
+        raise HTTPException(status_code=404, detail="Payroll record not found")
+        
+    update_data = record_in.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(record, field, value)
+        
+    await db.commit()
+    await db.refresh(record)
+    return record
+
+@router.delete("/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_payroll_record(
+    record_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_admin: dict = Depends(get_current_admin)
+):
+    result = await db.execute(select(PayrollRecord).where(PayrollRecord.id == record_id))
+    record = result.scalar_one_or_none()
+    if not record:
+        raise HTTPException(status_code=404, detail="Payroll record not found")
+        
+    await db.delete(record)
+    await db.commit()
+    return None

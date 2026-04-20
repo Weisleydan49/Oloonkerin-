@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Plus } from 'lucide-react';
-import { getPayrollRecords, createPayrollRecord, type PayrollRecord, type PayrollRecordCreate } from '../api/payroll';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { getPayrollRecords, createPayrollRecord, updatePayrollRecord, deletePayrollRecord, type PayrollRecord, type PayrollRecordCreate } from '../api/payroll';
 import { getDrivers, type Driver, getSupervisors, type Supervisor } from '../api/people';
 
 export const Payroll = () => {
@@ -9,6 +9,7 @@ export const Payroll = () => {
   const [supervisors, setSupervisors] = useState<Supervisor[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   
   // Form State
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -58,10 +59,44 @@ export const Payroll = () => {
     }
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const resetForm = () => {
+    setDate(new Date().toISOString().split('T')[0]);
+    setStaffId('');
+    setStaffType('driver');
+    setBasePay('');
+    setAllowances('0');
+    setDeductions('0');
+    setNotes('');
+    setEditingId(null);
+    setIsModalOpen(false);
+  };
+
+  const openEditModal = (record: PayrollRecord) => {
+    setDate(record.date.split('T')[0]);
+    setStaffId(record.staff_id);
+    setStaffType(record.staff_type);
+    setBasePay(record.base_pay.toString());
+    setAllowances(record.allowances.toString());
+    setDeductions(record.deductions.toString());
+    setNotes(record.notes || '');
+    setEditingId(record.id);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this payroll record? This cannot be undone.')) return;
+    try {
+      await deletePayrollRecord(id);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to delete payroll record:', error);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const newRecord: PayrollRecordCreate = { 
+      const payload: Partial<PayrollRecordCreate> = { 
         date: new Date(date).toISOString(),
         staff_id: staffId,
         staff_type: staffType,
@@ -70,15 +105,17 @@ export const Payroll = () => {
         deductions: parseFloat(deductions || '0'),
         notes: notes || undefined
       };
-      await createPayrollRecord(newRecord);
-      setIsModalOpen(false);
-      setBasePay('');
-      setAllowances('0');
-      setDeductions('0');
-      setNotes('');
+      
+      if (editingId) {
+        await updatePayrollRecord(editingId, payload);
+      } else {
+        await createPayrollRecord(payload as PayrollRecordCreate);
+      }
+      
+      resetForm();
       fetchData();
     } catch (error) {
-      console.error("Failed to create payroll record:", error);
+      console.error("Failed to save payroll record:", error);
     }
   };
 
@@ -101,7 +138,10 @@ export const Payroll = () => {
           <p className="text-muted-foreground mt-1">Process salaries, allowances, and statutory deductions.</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            resetForm();
+            setIsModalOpen(true);
+          }}
           className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium text-sm hover:opacity-90 transition-opacity"
         >
           <Plus className="w-4 h-4" />
@@ -118,13 +158,14 @@ export const Payroll = () => {
               <th className="px-6 py-4">Role</th>
               <th className="px-6 py-4">Base Pay</th>
               <th className="px-6 py-4">Net Payout (KSH)</th>
+              <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">Loading...</td></tr>
+              <tr><td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">Loading...</td></tr>
             ) : records.length === 0 ? (
-              <tr><td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">No payroll records found.</td></tr>
+              <tr><td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">No payroll records found.</td></tr>
             ) : (
               records.map((record) => (
                 <tr key={record.id} className="border-b border-border/50 last:border-0 hover:bg-secondary/30">
@@ -135,6 +176,22 @@ export const Payroll = () => {
                   <td className="px-6 py-4 capitalize text-muted-foreground">{record.staff_type}</td>
                   <td className="px-6 py-4 text-muted-foreground">{record.base_pay.toLocaleString()}</td>
                   <td className="px-6 py-4 text-emerald-500 font-medium whitespace-nowrap">KSH {record.net_pay.toLocaleString()}</td>
+                  <td className="px-6 py-4 text-right space-x-2">
+                    <button 
+                      onClick={() => openEditModal(record)}
+                      className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded transition-colors"
+                      title="Edit"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(record.id)}
+                      className="p-1.5 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 rounded transition-colors"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
                 </tr>
               ))
             )}
@@ -145,8 +202,8 @@ export const Payroll = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="glass p-6 rounded-xl border border-border/50 w-full max-w-md shadow-2xl">
-            <h3 className="text-xl font-bold mb-4">Process Payroll Entry</h3>
-            <form onSubmit={handleCreate} className="space-y-4">
+            <h3 className="text-xl font-bold mb-4">{editingId ? 'Edit Payroll Entry' : 'Process Payroll Entry'}</h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Payment Date</label>
                 <input 
@@ -221,7 +278,7 @@ export const Payroll = () => {
               <div className="flex justify-end gap-3 mt-6">
                 <button 
                   type="button" 
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={resetForm}
                   className="px-4 py-2 text-sm font-medium hover:bg-secondary rounded-md"
                 >
                   Cancel
