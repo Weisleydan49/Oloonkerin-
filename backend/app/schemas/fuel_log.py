@@ -5,7 +5,7 @@ from datetime import datetime
 class FuelLogBase(BaseModel):
     date: datetime
     vehicle_id: str
-    litres_used: float
+    litres: float
     cost_ksh: float
     notes: Optional[str] = None
 
@@ -15,7 +15,7 @@ class FuelLogCreate(FuelLogBase):
 class FuelLogUpdate(BaseModel):
     date: Optional[datetime] = None
     vehicle_id: Optional[str] = None
-    litres_used: Optional[float] = None
+    litres: Optional[float] = None
     cost_ksh: Optional[float] = None
     notes: Optional[str] = None
 

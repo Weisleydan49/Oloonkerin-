@@ -14,11 +14,9 @@ export const People = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Form State
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [licenseNumber, setLicenseNumber] = useState('');
-  const [baseSalary, setBaseSalary] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [idNumber, setIdNumber] = useState('');
 
   const fetchData = async () => {
     try {
@@ -44,29 +42,23 @@ export const People = () => {
     try {
       if (activeTab === 'drivers') {
         const newDriver: DriverCreate = {
-          first_name: firstName,
-          last_name: lastName,
-          phone_number: phoneNumber,
-          license_number: licenseNumber,
-          base_salary: parseFloat(baseSalary)
+          full_name: fullName,
+          phone: phone,
+          id_number: idNumber,
         };
         await createDriver(newDriver);
       } else {
         const newSupervisor: SupervisorCreate = {
-          first_name: firstName,
-          last_name: lastName,
-          phone_number: phoneNumber,
-          base_salary: parseFloat(baseSalary)
+          full_name: fullName,
+          phone: phone,
         };
         await createSupervisor(newSupervisor);
       }
       
       setIsModalOpen(false);
-      setFirstName('');
-      setLastName('');
-      setPhoneNumber('');
-      setLicenseNumber('');
-      setBaseSalary('');
+      setFullName('');
+      setPhone('');
+      setIdNumber('');
       fetchData();
     } catch (error) {
       console.error(`Failed to create ${activeTab}:`, error);
@@ -116,8 +108,7 @@ export const People = () => {
             <tr>
               <th className="px-6 py-4">Name</th>
               <th className="px-6 py-4">Phone</th>
-              {activeTab === 'drivers' && <th className="px-6 py-4">License #</th>}
-              <th className="px-6 py-4">Base Salary (KSH)</th>
+              {activeTab === 'drivers' && <th className="px-6 py-4">ID Number</th>}
               <th className="px-6 py-4">Status</th>
             </tr>
           </thead>
@@ -131,10 +122,9 @@ export const People = () => {
             ) : (
               (activeTab === 'drivers' ? drivers : supervisors).map((person: any) => (
                 <tr key={person.id} className="border-b border-border/50 last:border-0 hover:bg-secondary/30">
-                  <td className="px-6 py-4 font-bold text-foreground">{person.first_name} {person.last_name}</td>
-                  <td className="px-6 py-4 text-muted-foreground">{person.phone_number}</td>
-                  {activeTab === 'drivers' && <td className="px-6 py-4 font-medium font-mono text-primary">{person.license_number}</td>}
-                  <td className="px-6 py-4 font-medium">KSH {person.base_salary.toLocaleString()}</td>
+                  <td className="px-6 py-4 font-bold text-foreground">{person.full_name}</td>
+                  <td className="px-6 py-4 text-muted-foreground">{person.phone}</td>
+                  {activeTab === 'drivers' && <td className="px-6 py-4 font-medium font-mono text-primary">{person.id_number}</td>}
                   <td className="px-6 py-4">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${person.is_active ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
                       {person.is_active ? 'Active' : 'Inactive'}
@@ -152,22 +142,13 @@ export const People = () => {
           <div className="glass p-6 rounded-xl border border-border/50 w-full max-w-md shadow-2xl">
             <h3 className="text-xl font-bold mb-4">Add New {activeTab === 'drivers' ? 'Driver' : 'Supervisor'}</h3>
             <form onSubmit={handleCreate} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">First Name</label>
+                  <label className="block text-sm font-medium mb-1">Full Name</label>
                   <input 
                     required
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full bg-secondary border border-border/50 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary" 
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Last Name</label>
-                  <input 
-                    required
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
                     className="w-full bg-secondary border border-border/50 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary" 
                   />
                 </div>
@@ -177,8 +158,8 @@ export const People = () => {
                 <label className="block text-sm font-medium mb-1">Phone Number</label>
                 <input 
                   required
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   className="w-full bg-secondary border border-border/50 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary" 
                   placeholder="e.g. +254712345678" 
                 />
@@ -186,28 +167,16 @@ export const People = () => {
 
               {activeTab === 'drivers' && (
                 <div>
-                  <label className="block text-sm font-medium mb-1">License Number</label>
+                  <label className="block text-sm font-medium mb-1">ID Number</label>
                   <input 
                     required
-                    value={licenseNumber}
-                    onChange={(e) => setLicenseNumber(e.target.value)}
+                    value={idNumber}
+                    onChange={(e) => setIdNumber(e.target.value)}
                     className="w-full bg-secondary border border-border/50 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary" 
-                    placeholder="e.g. DL-123456" 
+                    placeholder="e.g. 12345678" 
                   />
                 </div>
               )}
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Base Salary (KSH)</label>
-                <input 
-                  type="number"
-                  required
-                  value={baseSalary}
-                  onChange={(e) => setBaseSalary(e.target.value)}
-                  className="w-full bg-secondary border border-border/50 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary" 
-                  placeholder="e.g. 40000" 
-                />
-              </div>
               
               <div className="flex justify-end gap-3 mt-6">
                 <button 

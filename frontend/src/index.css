@@ -31,3 +31,23 @@ body {
   backdrop-filter: blur(12px);
   border: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
 }
+/* Button Styles */
+button {
+  cursor: pointer;
+  border: none;
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+button:hover {
+  opacity: 0.9;
+}
+button:active {
+  transform: scale(0.98);
+}
+button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}

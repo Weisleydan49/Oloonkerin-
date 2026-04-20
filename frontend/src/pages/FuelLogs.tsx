@@ -44,7 +44,7 @@ export const FuelLogs = () => {
       const newLog: FuelLogCreate = { 
         date: new Date(date).toISOString(),
         vehicle_id: vehicleId,
-        litres_used: parseFloat(litresUsed),
+        litres: parseFloat(litresUsed),
         cost_ksh: parseFloat(costKsh),
         notes: notes || undefined
       };
@@ -98,7 +98,7 @@ export const FuelLogs = () => {
                   <tr key={log.id} className="border-b border-border/50 last:border-0 hover:bg-secondary/30">
                     <td className="px-6 py-4 font-medium">{new Date(log.date).toLocaleDateString()}</td>
                     <td className="px-6 py-4 text-primary">{vehicle ? `${vehicle.plate_number} (${vehicle.make_model})` : log.vehicle_id}</td>
-                    <td className="px-6 py-4">{log.litres_used} L</td>
+                    <td className="px-6 py-4">{log.litres} L</td>
                     <td className="px-6 py-4 text-emerald-500 font-medium">KSH {log.cost_ksh.toLocaleString()}</td>
                     <td className="px-6 py-4 text-muted-foreground">{log.notes || '-'}</td>
                   </tr>

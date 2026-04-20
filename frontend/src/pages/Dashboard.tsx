@@ -48,7 +48,7 @@ export const Dashboard = () => {
           getFuelLogs()
         ]);
 
-        const totalLitres = fuelLogs.reduce((acc, log) => acc + log.litres_used, 0);
+        const totalLitres = fuelLogs.reduce((acc, log) => acc + log.litres, 0);
 
         setStats({
           projectsCount: projects.length,
@@ -135,7 +135,7 @@ export const Dashboard = () => {
                     <tr key={log.id} className="border-b border-border/50 hover:bg-secondary/30">
                       <td className="px-4 py-3">{new Date(log.date).toLocaleDateString()}</td>
                       <td className="px-4 py-3 font-medium">{log.vehicle_id.split('-')[0]}</td>
-                      <td className="px-4 py-3">{log.litres_used} L</td>
+                      <td className="px-4 py-3">{log.litres} L</td>
                       <td className="px-4 py-3">{log.cost_ksh.toLocaleString()}</td>
                     </tr>
                   ))}

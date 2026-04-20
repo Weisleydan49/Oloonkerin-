@@ -4,7 +4,7 @@ export interface FuelLog {
   id: string;
   date: string;
   vehicle_id: string;
-  litres_used: number;
+  litres: number;
   cost_ksh: number;
   notes?: string;
   created_by_id: string;
@@ -14,7 +14,7 @@ export interface FuelLog {
 export interface FuelLogCreate {
   date: string;
   vehicle_id: string;
-  litres_used: number;
+  litres: number;
   cost_ksh: number;
   notes?: string;
 }

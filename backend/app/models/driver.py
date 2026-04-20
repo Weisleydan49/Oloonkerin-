@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Float
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from uuid import uuid4
@@ -11,6 +11,7 @@ class Driver(Base):
     full_name = Column(String, nullable=False)
     phone = Column(String, unique=True, nullable=False)
     id_number = Column(String, unique=True, nullable=False)
+    base_salary = Column(Float, nullable=False, default=0.0)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, server_default=func.now())
 
