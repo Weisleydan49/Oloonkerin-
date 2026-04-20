@@ -2,26 +2,26 @@ import { apiClient } from './client';
 
 export interface PayrollRecord {
   id: string;
-  date: string;
-  staff_id: string;
-  staff_type: 'driver' | 'supervisor';
-  base_pay: number;
+  month: string;
+  employee_id: string;
+  employee_type: 'driver' | 'supervisor';
+  basic_salary: number;
   allowances: number;
-  deductions: number;
+  sha: number;
+  nssf: number;
   net_pay: number;
-  notes?: string;
-  created_by_id: string;
   created_at: string;
 }
 
 export interface PayrollRecordCreate {
-  date: string;
-  staff_id: string;
-  staff_type: 'driver' | 'supervisor';
-  base_pay: number;
+  month: string;
+  employee_id: string;
+  employee_type: 'driver' | 'supervisor';
+  basic_salary: number;
   allowances?: number;
-  deductions?: number;
-  notes?: string;
+  sha?: number;
+  nssf?: number;
+  net_pay: number;
 }
 
 export const getPayrollRecords = async (): Promise<PayrollRecord[]> => {

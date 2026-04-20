@@ -17,8 +17,8 @@ export const Payroll = () => {
   const [staffType, setStaffType] = useState<'driver' | 'supervisor'>('driver');
   const [basePay, setBasePay] = useState('');
   const [allowances, setAllowances] = useState('0');
-  const [deductions, setDeductions] = useState('0');
-  const [notes, setNotes] = useState('');
+  const [sha, setSha] = useState('0');
+  const [nssf, setNssf] = useState('0');
 
   const fetchData = async () => {
     try {
@@ -65,20 +65,20 @@ export const Payroll = () => {
     setStaffType('driver');
     setBasePay('');
     setAllowances('0');
-    setDeductions('0');
-    setNotes('');
+    setSha('0');
+    setNssf('0');
     setEditingId(null);
     setIsModalOpen(false);
   };
 
   const openEditModal = (record: PayrollRecord) => {
-    setDate(record.date.split('T')[0]);
-    setStaffId(record.staff_id);
-    setStaffType(record.staff_type);
-    setBasePay(record.base_pay.toString());
+    setDate(record.month.split('T')[0]);
+    setStaffId(record.employee_id);
+    setStaffType(record.employee_type);
+    setBasePay(record.basic_salary.toString());
     setAllowances(record.allowances.toString());
-    setDeductions(record.deductions.toString());
-    setNotes(record.notes || '');
+    setSha(record.sha.toString());
+    setNssf(record.nssf.toString());
     setEditingId(record.id);
     setIsModalOpen(true);
   };
@@ -96,14 +96,20 @@ export const Payroll = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const basicSalary = parseFloat(basePay);
+      const allw = parseFloat(allowances || '0');
+      const shaVal = parseFloat(sha || '0');
+      const nssfVal = parseFloat(nssf || '0');
+      
       const payload: Partial<PayrollRecordCreate> = { 
-        date: new Date(date).toISOString(),
-        staff_id: staffId,
-        staff_type: staffType,
-        base_pay: parseFloat(basePay),
-        allowances: parseFloat(allowances || '0'),
-        deductions: parseFloat(deductions || '0'),
-        notes: notes || undefined
+        month: `${date}T00:00:00`,
+        employee_id: staffId,
+        employee_type: staffType,
+        basic_salary: basicSalary,
+        allowances: allw,
+        sha: shaVal,
+        nssf: nssfVal,
+        net_pay: basicSalary + allw - shaVal - nssfVal
       };
       
       if (editingId) {
@@ -123,10 +129,10 @@ export const Payroll = () => {
   const getStaffName = (id: string, type: string) => {
     if (type === 'driver') {
       const d = drivers.find(d => d.id === id);
-      return d ? `${d.first_name} ${d.last_name}` : id;
+      return d ? d.full_name : id;
     } else {
       const s = supervisors.find(s => s.id === id);
-      return s ? `${s.first_name} ${s.last_name}` : id;
+      return s ? s.full_name : id;
     }
   };
 
@@ -169,12 +175,12 @@ export const Payroll = () => {
             ) : (
               records.map((record) => (
                 <tr key={record.id} className="border-b border-border/50 last:border-0 hover:bg-secondary/30">
-                  <td className="px-6 py-4 whitespace-nowrap">{new Date(record.date).toLocaleDateString()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{new Date(record.month).toLocaleDateString()}</td>
                   <td className="px-6 py-4 font-bold text-foreground">
-                    {getStaffName(record.staff_id, record.staff_type)}
+                    {getStaffName(record.employee_id, record.employee_type)}
                   </td>
-                  <td className="px-6 py-4 capitalize text-muted-foreground">{record.staff_type}</td>
-                  <td className="px-6 py-4 text-muted-foreground">{record.base_pay.toLocaleString()}</td>
+                  <td className="px-6 py-4 capitalize text-muted-foreground">{record.employee_type}</td>
+                  <td className="px-6 py-4 text-muted-foreground">{record.basic_salary.toLocaleString()}</td>
                   <td className="px-6 py-4 text-emerald-500 font-medium whitespace-nowrap">KSH {record.net_pay.toLocaleString()}</td>
                   <td className="px-6 py-4 text-right space-x-2">
                     <button 
@@ -225,12 +231,12 @@ export const Payroll = () => {
                   <option value="driver:::" disabled>Select staff member</option>
                   <optgroup label="Drivers">
                     {drivers.map(d => (
-                      <option key={d.id} value={`driver:::${d.id}`}>{d.first_name} {d.last_name}</option>
+                      <option key={d.id} value={`driver:::${d.id}`}>{d.full_name}</option>
                     ))}
                   </optgroup>
                   <optgroup label="Supervisors">
                     {supervisors.map(s => (
-                      <option key={s.id} value={`supervisor:::${s.id}`}>{s.first_name} {s.last_name}</option>
+                      <option key={s.id} value={`supervisor:::${s.id}`}>{s.full_name}</option>
                     ))}
                   </optgroup>
                 </select>
@@ -256,24 +262,23 @@ export const Payroll = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Deductions (KSH)</label>
+                  <label className="block text-sm font-medium mb-1">SHA (KSH)</label>
                   <input 
                     type="number"
-                    value={deductions}
-                    onChange={(e) => setDeductions(e.target.value)}
+                    value={sha}
+                    onChange={(e) => setSha(e.target.value)}
                     className="w-full bg-secondary border border-border/50 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary text-rose-500" 
                   />
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Notes (Optional)</label>
-                <textarea 
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="w-full bg-secondary border border-border/50 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary" 
-                  rows={2} 
-                  placeholder="e.g. Overtime allowance + NHIF deduction"
-                />
+                <div>
+                  <label className="block text-sm font-medium mb-1">NSSF (KSH)</label>
+                  <input 
+                    type="number"
+                    value={nssf}
+                    onChange={(e) => setNssf(e.target.value)}
+                    className="w-full bg-secondary border border-border/50 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary text-rose-500" 
+                  />
+                </div>
               </div>
               <div className="flex justify-end gap-3 mt-6">
                 <button 
